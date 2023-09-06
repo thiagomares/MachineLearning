@@ -1,22 +1,16 @@
-from sqlalchemy.engine import URL
-from sqlalchemy import create_engine, select, TryCast, MetaData
-from abc import ABC, abstractmethod
 import json
-import pyodbc
+from sqlalchemy.engine import URL
+from sqlalchemy.engine import create_engine
 import pandas as pd
-import requests
 
-class Geradora:
-    def __init__(self):
-        self._data = None
-    
-    def ReadJson(self):
-        with open("./data.json", 'r+') as file:
-            self._data = json.load(file)
 
-def CreateEngine():
-    data = Geradora.ReadJson()
-    conn_url = URL.create(
+with open("query1.sql", "r+") as query:
+    script = str(query.read())
+
+with open("data.json", "r+") as data:
+    data = json.load(data)
+
+conn_url = URL.create(
             "mssql+pyodbc",
             username=data['username'],
             password=data["password"],
@@ -28,8 +22,6 @@ def CreateEngine():
                 "TrustServerCertificate": "yes"
             }
         )
-    engine = create_engine(conn_url)
-    return engine        
-
-dataframe = pd.read_sql_query("select * from ONE_Bank_Data", CreateEngine())
+engine = create_engine(conn_url)
+dataframe = pd.read_sql_query(query, engine)
 print(dataframe)
